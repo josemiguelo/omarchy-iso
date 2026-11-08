@@ -32,10 +32,17 @@ class HardwareKeyringsTest(unittest.TestCase):
             with mock.patch.object(phases_impl.subprocess, "run") as run, \
                     mock.patch.object(phases_impl, "info"):
                 phases_impl._populate_hardware_keyrings(self._ctx(target))
-            run.assert_called_once()
+            # reset-failed, then the populate as a transient unit, so systemd
+            # ends the gpg-agent pacman-key leaves behind in the target.
+            self.assertEqual(run.call_count, 2)
             argv = run.call_args.args[0]
-            self.assertEqual(argv[:3], ["pacman-key", "--gpgdir", str(target / "etc/pacman.d/gnupg")])
-            self.assertEqual(argv[3:], ["--populate-from", str(keyrings), "--populate", "t2-arch-packages"])
+            self.assertEqual(argv[:5], ["systemd-run", "--wait", "--pipe", "--collect", "--quiet"])
+            self.assertEqual(argv[5], f"--unit={phases_impl.HARDWARE_KEYRING_UNIT}")
+            self.assertEqual(argv[6:8], ["sh", "-c"])
+            script = argv[8]
+            self.assertIn(f"pacman-key --gpgdir {target / 'etc/pacman.d/gnupg'}", script)
+            self.assertIn(f"--populate-from {keyrings}", script)
+            self.assertTrue(script.endswith("--populate t2-arch-packages"))
             self.assertTrue(run.call_args.kwargs["check"])
 
     def test_skips_when_no_hardware_keyring_is_installed(self):
