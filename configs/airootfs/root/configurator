@@ -531,15 +531,16 @@ if [[ $iso_arch == aarch64 && ! -s /root/omarchy_kernel ]]; then
   exit 1
 fi
 
-# T2 Macs need their own kernel for keyboard/wifi drivers. aarch64 images are
-# built for one platform kernel (linux-omarchy today), recorded by the
-# build, and nothing else boots.
+# T2 Macs install linux-omarchy too: Omarchy's fix-t2.sh adds KaiT2en's T2
+# drivers (keyboard, trackpad, SMC, battery, audio) to it through DKMS, from
+# the [t2-arch-packages] repo. The live ISO itself still boots linux-t2 on
+# Macs for a working keyboard in this configurator. aarch64 images are built
+# for one platform kernel (linux-omarchy today), recorded by the build, and
+# nothing else boots.
 iso_kernel=$(cat /root/omarchy_kernel 2>/dev/null || true)
 detect_kernel() {
   if [[ $iso_arch == aarch64 ]]; then
     echo "$iso_kernel"
-  elif lspci -nn 2>/dev/null | grep -q "106b:180[12]"; then
-    echo "linux-t2"
   else
     echo "linux-omarchy"
   fi

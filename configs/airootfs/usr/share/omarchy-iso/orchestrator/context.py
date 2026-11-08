@@ -229,17 +229,12 @@ def iso_kernel(path: Path = ISO_KERNEL_FILE) -> str:
 def _default_kernel(pci_devices: Path = Path("/sys/bus/pci/devices"), platform_kernel: str | None = None) -> str:
     # An aarch64 image boots and installs one kernel and nothing else boots;
     # the configurator's detect_kernel makes the same choice.
+    # T2 Macs get linux-omarchy as well: KaiT2en's DKMS drivers from
+    # [t2-arch-packages] supply what linux-t2 used to (Omarchy's fix-t2.sh).
+    # pci_devices stays for callers and tests that pass one.
     platform_kernel = iso_kernel() if platform_kernel is None else platform_kernel
     if platform_kernel:
         return platform_kernel
-    for device in pci_devices.glob("*"):
-        try:
-            vendor = (device / "vendor").read_text().strip().lower()
-            device_id = (device / "device").read_text().strip().lower()
-        except OSError:
-            continue
-        if vendor == "0x106b" and device_id in {"0x1801", "0x1802"}:
-            return "linux-t2"
     return "linux-omarchy"
 
 

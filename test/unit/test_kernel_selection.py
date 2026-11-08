@@ -1,4 +1,4 @@
-"""Fresh installs use the Omarchy kernel, except for T2 Macs."""
+"""Fresh installs use the Omarchy kernel, T2 Macs included (KaiT2en DKMS drivers)."""
 
 import json
 import os
@@ -30,8 +30,9 @@ class KernelSelectionTest(unittest.TestCase):
         cases = [
             ("00:02.0 VGA compatible controller [0300]: Intel [8086:b080]", "linux-omarchy"),
             ("00:01.0 Ethernet controller [0200]: Apple [106b:2001]", "linux-omarchy"),
-            ("04:00.0 Mass storage controller [0180]: Apple [106b:1801]", "linux-t2"),
-            ("04:00.0 Mass storage controller [0180]: Apple [106b:1802]", "linux-t2"),
+            # T2 Macs: linux-omarchy plus KaiT2en's DKMS drivers (fix-t2.sh).
+            ("04:00.0 Mass storage controller [0180]: Apple [106b:1801]", "linux-omarchy"),
+            ("04:00.0 Mass storage controller [0180]: Apple [106b:1802]", "linux-omarchy"),
             ("", "linux-omarchy"),
         ]
         for devices, expected in cases:
@@ -48,8 +49,8 @@ class KernelSelectionTest(unittest.TestCase):
         for vendor, device, expected in [
             ("0x8086", "0xb080", "linux-omarchy"),
             ("0x106b", "0x2001", "linux-omarchy"),
-            ("0x106b", "0x1801", "linux-t2"),
-            ("0x106b", "0x1802", "linux-t2"),
+            ("0x106b", "0x1801", "linux-omarchy"),
+            ("0x106b", "0x1802", "linux-omarchy"),
         ]:
             with self.subTest(device=device), tempfile.TemporaryDirectory() as tmp:
                 pci = Path(tmp)

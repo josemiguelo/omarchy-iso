@@ -168,6 +168,11 @@ fi
 pacman-key --add /builder/omarchy.gpg
 pacman-key --lsign-key 40DFB630FF42BCFFB047046CF0134EE680CAC571
 
+# The [t2-arch-packages] repo (KaiT2en T2 Mac drivers for linux-omarchy) is
+# signed with its own key; trust it for the download, as for [omarchy].
+pacman-key --add /builder/t2-arch-packages.gpg
+pacman-key --lsign-key 077D8295CCF834D3F5EC25F70506B72C34EB162F
+
 # omarchy-keyring is needed inside the offline mirror too.
 pacman --config "$online_pacman_conf" --noconfirm -Sy omarchy-keyring
 pacman-key --populate omarchy

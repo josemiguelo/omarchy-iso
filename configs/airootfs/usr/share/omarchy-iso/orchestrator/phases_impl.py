@@ -1262,6 +1262,29 @@ def _join_target_keyring_init(ctx: InstallContext, *, raise_on_error: bool = Tru
             f"per-machine pacman keyring init failed (exit {proc.returncode}):\n"
             f"{(out or '').strip()}"
         )
+    if proc.returncode == 0:
+        _populate_hardware_keyrings(ctx)
+
+
+# Keyrings that hardware setup may install into the target while the keyring
+# unit is still running (Omarchy's fix-t2.sh installs t2-arch-packages-keyring
+# for the [t2-arch-packages] repo it adds on T2 Macs). Their own post-install
+# --populate can land before the master key exists, so trust them again once
+# the keyring is complete. Each is populated only if its files are present.
+HARDWARE_KEYRINGS = ("t2-arch-packages",)
+
+
+def _populate_hardware_keyrings(ctx: InstallContext) -> None:
+    keyring_dir = ctx.target / "usr" / "share" / "pacman" / "keyrings"
+    present = [name for name in HARDWARE_KEYRINGS if (keyring_dir / f"{name}.gpg").is_file()]
+    if not present:
+        return
+    gpgdir = str(ctx.target / "etc" / "pacman.d" / "gnupg")
+    info(f"› trusting hardware keyrings: {' '.join(present)}")
+    subprocess.run(
+        ["pacman-key", "--gpgdir", gpgdir, "--populate-from", str(keyring_dir), "--populate", *present],
+        check=True, capture_output=True, text=True,
+    )
 
 
 def stop_target_keyring_init(ctx: InstallContext) -> None:
