@@ -58,7 +58,9 @@ from .ui import error, info
 
 # Package targets are written by builder/build-iso.sh. Stable ISOs use the
 # stable package names, while dev/local-source ISOs install the dev package
-# names explicitly instead of relying on provides=omarchy resolution.
+# names explicitly instead of relying on provides=omarchy resolution. A
+# local-stable ISO (--local-source --stable) builds the stable names from its
+# checkout, so it takes the stable ones like any published-package ISO.
 def _iso_ref() -> str:
     if ref := os.environ.get("OMARCHY_ISO_REF"):
         return ref.strip()

@@ -9,6 +9,7 @@ LOCAL_PKGS_PATH=""
 OMARCHY_ARCH="${OMARCHY_ARCH:-x86_64}"
 N1X_DEV_SSH_KEY=""
 PACKAGE_DIR=""
+LOCAL_STABLE=""
 while [[ $# -gt 0 ]]; do
   case $1 in
   --arch)
@@ -90,14 +91,34 @@ while [[ $# -gt 0 ]]; do
     OMARCHY_MIRROR=rc
     shift
     ;;
+  --stable)
+    # With --local-source: build the checkout as the stable omarchy and
+    # omarchy-settings packages (pkgbuilds/omarchy*, not the -dev ones) and
+    # install on the stable channel, for a checkout based on a release.
+    LOCAL_STABLE=1
+    shift
+    ;;
   *)
     echo "Unknown option: $1"
-    echo "Usage: $0 [--no-cache] [--keep-pkg-cache] [--no-boot-offer] [--debug] [--edge] [--dev|--rc] [--local-source <omarchy-checkout> <pkgs-checkout>]"
+    echo "Usage: $0 [--no-cache] [--keep-pkg-cache] [--no-boot-offer] [--debug] [--edge] [--dev|--rc] [--local-source <omarchy-checkout> <pkgs-checkout> [--stable]]"
     echo "       $0 --arch aarch64 [--edge|--rc] [--package-dir DIR] [--dev-ssh <pubkey>] [--local-source <omarchy-checkout> <pkgs-checkout>] [...]"
     exit 1
     ;;
   esac
 done
+
+# --local-source builds edge's -dev packages from the checkout unless --stable
+# says it's based on a release: then the stable packages, the stable mirror,
+# and a ref of its own (local-stable), which the builder and the installer
+# treat as a published-package ISO.
+if [[ -n $LOCAL_STABLE ]]; then
+  if [[ -z $LOCAL_OMARCHY_PATH ]]; then
+    echo "Error: --stable goes with --local-source (a stable build of a local checkout)" >&2
+    exit 1
+  fi
+  OMARCHY_ISO_REF=local-stable
+  OMARCHY_MIRROR=stable
+fi
 
 if [[ -n $LOCAL_OMARCHY_PATH ]]; then
   [[ -d $LOCAL_OMARCHY_PATH ]] || { echo "Error: Omarchy checkout not found at $LOCAL_OMARCHY_PATH" >&2; exit 1; }

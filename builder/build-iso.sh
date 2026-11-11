@@ -48,7 +48,8 @@ esac
 # package recipes track the quattro branch. This avoids relying on pacman's
 # provides=omarchy resolution and shows the real package names being tested in
 # the offline mirror and target install. Every other ref, the default quattro
-# build included, installs the published omarchy packages.
+# build included, installs the published omarchy packages; so does
+# local-stable (--local-source --stable), which builds them from the checkout.
 case "$OMARCHY_ISO_REF" in
   edge|dev|local)
     : "${OMARCHY_RUNTIME_PACKAGE:=omarchy-dev}"
