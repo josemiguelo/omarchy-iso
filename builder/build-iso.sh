@@ -144,8 +144,11 @@ else
   # Full upgrade, not just -Sy: docker never re-pulls :latest once it's cached,
   # so this container can be months behind the mirror it installs from. A plain
   # -Sy install is then a partial upgrade — new packages linked against a glibc
-  # the container doesn't have yet.
-  pacman --noconfirm -Syu archiso git sudo base-devel jq grub imagemagick neovim nodejs npm tree-sitter-cli btrfs-progs
+  # the container doesn't have yet. -uu also downgrades: a freshly pulled
+  # :latest can be ahead of the stable channel's snapshot instead (Arch's
+  # OpenSSL 4 against the snapshot's 3.6, which no package set satisfies), and
+  # the container's tools are meant to be the channel's either way.
+  pacman --noconfirm -Syuu archiso git sudo base-devel jq grub imagemagick neovim nodejs npm tree-sitter-cli btrfs-progs
   mkarchiso_command=mkarchiso
 fi
 
